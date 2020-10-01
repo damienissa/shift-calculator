@@ -401,6 +401,188 @@ class CalculatorTests: XCTestCase {
         assert(result.shift, 0)
     }
    
+    func test_offMoreThan30() {
+        
+        let statuses = [
+            Status(type: .driving, startDate: .from(0)),
+            Status(type: .off, startDate: .from(8)),
+            Status(type: .driving, startDate: .from(8.5)),
+            Status(type: .off, startDate: .from(11.5)),
+        ]
+        
+        let sut = makeSUT()
+        
+        let result = sut.calculate(statuses, on: .from(11.5), specials: [])
+        assert(result.drive, 0)
+        assert(result.shift, 2.5)
+    }
+    
+    func test_offMoreThan30Viol() {
+        
+        let statuses = [
+            Status(type: .driving, startDate: .from(0)),
+            Status(type: .off, startDate: .from(8)),
+            Status(type: .driving, startDate: .from(8.45)),
+            Status(type: .off, startDate: .from(11.5)),
+        ]
+        
+        let sut = makeSUT()
+        
+        let result = sut.calculate(statuses, on: .from(11.5), specials: [])
+        assert(result.drive, -0.05)
+        assert(result.shift, 2.5)
+    }
+    
+    func test_sbMoreThan30() {
+        
+        let statuses = [
+            Status(type: .driving, startDate: .from(0)),
+            Status(type: .sb, startDate: .from(8)),
+            Status(type: .driving, startDate: .from(8.5)),
+            Status(type: .off, startDate: .from(11.5)),
+        ]
+        
+        let sut = makeSUT()
+        
+        let result = sut.calculate(statuses, on: .from(11.5), specials: [])
+        assert(result.drive, 0)
+        assert(result.shift, 2.5)
+    }
+    
+    func test_sbMoreThan30Viol() {
+        
+        let statuses = [
+            Status(type: .driving, startDate: .from(0)),
+            Status(type: .sb, startDate: .from(8)),
+            Status(type: .driving, startDate: .from(8.45)),
+            Status(type: .off, startDate: .from(11.5)),
+        ]
+        
+        let sut = makeSUT()
+        
+        let result = sut.calculate(statuses, on: .from(11.5), specials: [])
+        assert(result.drive, -0.05)
+        assert(result.shift, 2.5)
+    }
+
+    
+    func test_onMoreThan30() {
+        
+        let statuses = [
+            Status(type: .driving, startDate: .from(0)),
+            Status(type: .on, startDate: .from(8)),
+            Status(type: .driving, startDate: .from(8.5)),
+            Status(type: .off, startDate: .from(11.5)),
+        ]
+        
+        let sut = makeSUT()
+        
+        let result = sut.calculate(statuses, on: .from(11.5), specials: [])
+        assert(result.drive, 0)
+        assert(result.shift, 2.5)
+    }
+    
+    func test_onMoreThan30Viol() {
+        
+        let statuses = [
+            Status(type: .driving, startDate: .from(0)),
+            Status(type: .on, startDate: .from(8)),
+            Status(type: .driving, startDate: .from(8.45)),
+            Status(type: .off, startDate: .from(11.5)),
+        ]
+        
+        let sut = makeSUT()
+        
+        let result = sut.calculate(statuses, on: .from(11.5), specials: [])
+        assert(result.drive, -0.05)
+        assert(result.shift, 2.5)
+    }
+    
+    func test_offMoreThan10() {
+        let statuses = [
+            Status(type: .driving, startDate: .from(0)),
+            Status(type: .off, startDate: .from(8)),
+            Status(type: .driving, startDate: .from(18)),
+        ]
+        
+        let sut = makeSUT()
+        
+        let result = sut.calculate(statuses, on: .from(24), specials: [])
+        assert(result.drive, 5)
+        assert(result.shift, 8)
+    }
+    
+    func test_offMoreThan10Viol() {
+        let statuses = [
+            Status(type: .driving, startDate: .from(0)),
+            Status(type: .off, startDate: .from(8)),
+            Status(type: .driving, startDate: .from(17.75)),
+        ]
+        
+        let sut = makeSUT()
+        
+        let result = sut.calculate(statuses, on: .from(24), specials: [])
+        assert(result.drive, -3.25)
+        assert(result.shift, -0.25)
+    }
+    
+    func test_sbMoreThan10() {
+        let statuses = [
+            Status(type: .driving, startDate: .from(0)),
+            Status(type: .sb, startDate: .from(8)),
+            Status(type: .driving, startDate: .from(18)),
+        ]
+        
+        let sut = makeSUT()
+        
+        let result = sut.calculate(statuses, on: .from(24), specials: [])
+        assert(result.drive, 5)
+        assert(result.shift, 8)
+    }
+    
+    func test_sbMoreThan10Viol() {
+        let statuses = [
+            Status(type: .driving, startDate: .from(0)),
+            Status(type: .sb, startDate: .from(8)),
+            Status(type: .driving, startDate: .from(17.75)),
+        ]
+        
+        let sut = makeSUT()
+        
+        let result = sut.calculate(statuses, on: .from(24), specials: [])
+        assert(result.drive, -3.25)
+        assert(result.shift, -0.25)
+    }
+    
+    func test_2to8() {
+        let statuses = [
+            Status(type: .driving, startDate: .from(0)),
+            Status(type: .off, startDate: .from(2)),
+            Status(type: .driving, startDate: .from(4)),
+            Status(type: .sb, startDate: .from(12)),
+            Status(type: .driving, startDate: .from(20)),
+            Status(type: .on, startDate: .from(23)),
+        ]
+        
+        let sut = makeSUT()
+        
+        let result = sut.calculate(statuses, on: .from(24), specials: [])
+        assert(result.drive, 0)
+        assert(result.shift, 2)
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     func makeSUT() -> Calculator {
         Calc()
     }
