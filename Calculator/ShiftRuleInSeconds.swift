@@ -17,4 +17,6 @@ public struct ShiftRuleInSeconds {
     public let restartHours: TimeInterval = 34 * hInSec
     public let shiftRestartHours: TimeInterval = 10 * hInSec
     public let breakHours: TimeInterval = 8 * hInSec
+    
+    public init() {}
 }

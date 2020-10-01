@@ -378,6 +378,28 @@ class CalculatorTests: XCTestCase {
         
         XCTAssertEqual(status.statusLength, 0)
     }
+    
+    func test_11Violation() {
+        
+        let statuses = [
+            Status(type: .off, startDate: .from(0)),
+            Status(type: .on, startDate: .from(7)),
+            Status(type: .driving, startDate: .from(8)),
+            Status(type: .off, startDate: .from(13.5)),
+            Status(type: .driving, startDate: .from(16.5)),
+            Status(type: .sb, startDate: .from(22)),
+            Status(type: .on, startDate: .from(24)),
+            Status(type: .sb, startDate: .from(24.5)),
+            Status(type: .driving, startDate: .from(28.75)),
+            Status(type: .sb, startDate: .from(29)),
+        ]
+        
+        let sut = makeSUT()
+        
+        let result = sut.calculate(statuses, on: .from(24), specials: [])
+        assert(result.drive, 0)
+        assert(result.shift, 0)
+    }
    
     func makeSUT() -> Calculator {
         Calc()

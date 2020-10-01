@@ -26,6 +26,7 @@ public struct RestContainer {
     }
     
     mutating func insert(_ rest: TimeInterval) -> TimeInterval {
+        
         var element = 0.0
         if chain.count == 2 {
             element = chain.removeFirst()
