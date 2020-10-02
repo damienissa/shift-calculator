@@ -18,6 +18,10 @@ extension TimeInterval {
     static func minutes(_ min: TimeInterval) -> TimeInterval {
         min / 60
     }
+    
+    static func seconds(_ seconds: TimeInterval) -> TimeInterval {
+        .minutes(seconds / 60)
+    }
 }
 
 class CalculatorTests: XCTestCase {
@@ -325,12 +329,12 @@ class CalculatorTests: XCTestCase {
         let result = sut.calculate(statuses, on: .from(10.5), specials: [])
         assert(result.drive, 1)
         assert(result.shift, 3.5)
-        assert(result.maxTimeWithoutBreak, 3)
+        assert(result.maxTimeWithoutBreak, -2)
         
         let result2 = sut.calculate(statuses, on: .from(14), specials: [])
         assert(result2.drive, 0)
         assert(result2.shift, 0)
-        assert(result2.maxTimeWithoutBreak, 3)
+        assert(result2.maxTimeWithoutBreak, -2)
     }
     
     func test_30MinutesBreakeChanges_Violation() {
@@ -348,7 +352,7 @@ class CalculatorTests: XCTestCase {
         let result = sut.calculate(statuses, on: .from(9.5), specials: [])
         assert(result.drive, 2.5)
         assert(result.shift, 4.5)
-        assert(result.maxTimeWithoutBreak, -0.5)
+        assert(result.maxTimeWithoutBreak, 8)
     }
     
     func test_shiftViolation() {
@@ -399,6 +403,29 @@ class CalculatorTests: XCTestCase {
         let result = sut.calculate(statuses, on: .from(24), specials: [])
         assert(result.drive, 0)
         assert(result.shift, 0)
+    }
+    
+    func test_11Violation_() {
+        
+        let statuses = [
+            Status(type: .sb, startDate: .from(0)),
+            Status(type: .on, startDate: .from(9 + .minutes(54) + .seconds(49))),
+            Status(type: .driving, startDate: .from(10 + .minutes(23) + .seconds(50))),
+            Status(type: .on, startDate: .from(11 + .minutes(42) + .seconds(28))),
+            Status(type: .driving, startDate: .from(11 + .minutes(56) + .seconds(43))),
+            Status(type: .off, startDate: .from(12 + .minutes(8) + .seconds(59))),
+            Status(type: .driving, startDate: .from(14 + .minutes(3) + .seconds(48))),
+            Status(type: .on, startDate: .from(14 + .minutes(10) + .seconds(53))),
+            Status(type: .driving, startDate: .from(14 + .minutes(39) + .seconds(44))),
+            Status(type: .off, startDate: .from(17 + .minutes(18) + .seconds(13))),
+            Status(type: .driving, startDate: .from(17 + .minutes(38) + .seconds(57))),
+            Status(type: .sb, startDate: .from(22 + .minutes(11) + .seconds(18))),
+        ]
+        
+        let sut = makeSUT()
+        
+        let result = sut.calculate(statuses, on: .from(22 + .minutes(15)), specials: [])
+        assert(result.maxTimeWithoutBreak, 8)
     }
    
     func makeSUT() -> Calculator {

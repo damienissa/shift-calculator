@@ -48,18 +48,13 @@ public struct RestContainer {
 public class Calc: Calculator {
     
     private let rule = ShiftRuleInSeconds()
-    private let longRestTime = 7.0 * 3600
-    private let shortRestTime = 2.0 * 3600
-    private let specialTime = 2.0 * 3600
+    private let longRestTime = 7.0 * hInSec
+    private let shortRestTime = 2.0 * hInSec
+    private let specialTime = 2.0 * hInSec
+    private let halfHour = 0.5 * hInSec
     
     private var reseted = false
-    private var maxTimeWithoutBreak: TimeInterval = 0 {
-        didSet {
-            if maxTimeWithoutBreak > rule.breakHours {
-                maxTimeWithoutBreak = rule.breakHours
-            }
-        }
-    }
+    private var maxTimeWithoutBreak: TimeInterval = 0
     private var drive: TimeInterval = 0
     private var shift: TimeInterval = 0 {
         didSet {
@@ -108,7 +103,7 @@ public class Calc: Calculator {
                 fillOnStatus(status)
             }
             
-            if status.type != .driving && maxTimeWithoutBreak > 0 {
+            if status.type != .driving && status.statusLength > halfHour {
                 maxTimeWithoutBreak = rule.breakHours
             }
         }
