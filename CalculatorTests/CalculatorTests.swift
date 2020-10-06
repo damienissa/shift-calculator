@@ -598,17 +598,26 @@ class CalculatorTests: XCTestCase {
         assert(result.shift, 2)
     }
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+    func test_big_bigShift() {
+        
+        let statuses = [
+            Status(type: .on, startDate: .from(0)),
+            Status(type: .driving, startDate: .from(1)),
+            Status(type: .off, startDate: .from(7)),
+            Status(type: .on, startDate: .from(10)),
+            Status(type: .driving, startDate: .from(12)),
+            Status(type: .off, startDate: .from(16)),
+            Status(type: .sb, startDate: .from(17)),
+            Status(type: .off, startDate: .from(24)),
+            Status(type: .driving, startDate: .from(25)),
+        ]
+        
+        let sut = makeSUT()
+        
+        let result = sut.calculate(statuses, on: .from(32), specials: [])
+        assert(result.drive, -1)
+        assert(result.shift, -1)
+    }
     
     func makeSUT() -> Calculator {
         Calc()

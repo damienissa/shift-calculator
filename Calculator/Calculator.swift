@@ -55,6 +55,9 @@ public class Calc: Calculator {
     
     private var reseted = false
     private var maxTimeWithoutBreak: TimeInterval = 0
+    
+    // MARK: - Calculated values
+    
     private var drive: TimeInterval = 0
     private var shift: TimeInterval = 0 {
         didSet {
@@ -175,7 +178,7 @@ public class Calc: Calculator {
             
             if previousStatus != nil,
                previousStatus!.statusLength < longRestTime,
-               previousStatus!.isRest() && workingCopy[i].isRest() {
+               previousStatus!.isRest() && workingCopy[i].isRest(), workingCopy[i].statusLength < 7 * 3600 {
                 
                 previousStatus?.setEndDate(workingCopy[i].endDate!)
             } else {
