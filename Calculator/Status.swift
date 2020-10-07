@@ -7,7 +7,7 @@
 
 import Foundation
 
-public enum StatusType {
+public enum StatusType: Int {
     
     case on
     case driving
@@ -32,6 +32,10 @@ public struct Status {
     
     public mutating func setEndDate(_ date: Date) {
         endDate = date
+    }
+    
+    public mutating func setType(_ type: StatusType) {
+        self.type = type
     }
     
     public func isRest() -> Bool {

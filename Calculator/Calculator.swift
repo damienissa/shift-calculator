@@ -54,24 +54,18 @@ public class Calc: Calculator {
     private let halfHour = 0.5 * hInSec
     
     private var reseted = false
-    private var maxTimeWithoutBreak: TimeInterval = 0
     
     // MARK: - Calculated values
     
-    private var drive: TimeInterval = 0
-    private var shift: TimeInterval = 0 {
-        didSet {
-            if shift < drive {
-                drive = shift
-            }
-        }
-    }
+    private var result: CalculationResult
     private var restChain: RestContainer!
     
     
     // MARK: - Lifecycle
     
     public init() {
+        
+        result = CalculationResult.init(rule: rule)
         restChain = RestContainer(finished: {
             self.reseted = true
         }, maxValue: rule.shiftRestartHours)
@@ -86,11 +80,10 @@ public class Calc: Calculator {
         
         let statuses = getStatusesWithEndDate(st, checkDate: date)
         fillSpecials(specials)
-        
         for index in 0 ..< statuses.count {
             
             let status = statuses[index]
-            if status.type == .off && status.statusLength >= rule.shiftRestartHours && index == 0 {
+            if status.isRest() && status.statusLength >= rule.shiftRestartHours && index == 0 {
                 reset()
                 break
             }
@@ -107,41 +100,41 @@ public class Calc: Calculator {
             }
             
             if status.type != .driving && status.statusLength > halfHour {
-                maxTimeWithoutBreak = rule.breakHours
+                result.maxTimeWithoutBreak = rule.breakHours
             }
         }
         
-        return .init(shift: shift, drive: drive, maxTimeWithoutBreak: maxTimeWithoutBreak)
+        return result
     }
     
     private func fillRestStatus(_ status: Status) {
-       
+        
         if status.statusLength >= longRestTime && status.type == .sb {
-            shift -= restChain.insert(status.statusLength)
+            result.shift -= restChain.insert(status.statusLength)
         } else if status.statusLength >= shortRestTime {
-            shift -= restChain.insert(status.statusLength)
+            result.shift -= restChain.insert(status.statusLength)
         } else {
-            shift -= status.statusLength
+            result.shift -= status.statusLength
         }
     }
     
     private func fillOnStatus(_ status: Status) {
         
-        shift -= status.statusLength
+        result.shift -= status.statusLength
     }
     
     private func fillDrivingStatus(_ status: Status) {
         
-        drive -= status.statusLength
-        shift -= status.statusLength
-        maxTimeWithoutBreak -= status.statusLength
+        result.drive -= status.statusLength
+        result.shift -= status.statusLength
+        result.maxTimeWithoutBreak -= status.statusLength
     }
     
     private func reset() {
         
-        drive = rule.driveHours
-        shift = rule.shiftHours
-        maxTimeWithoutBreak = rule.breakHours
+        result.drive = rule.driveHours
+        result.shift = rule.shiftHours
+        result.maxTimeWithoutBreak = rule.breakHours
         restChain.clear()
         reseted = false
     }
@@ -151,46 +144,128 @@ public class Calc: Calculator {
         specials.forEach {
             switch $0 {
             case .adverseDriving:
-                drive += specialTime
+                result.drive += specialTime
                 if !specials.contains(.hourException) {
-                   shift += specialTime
+                    result.shift += specialTime
                 }
             case .hourException:
-                shift += specialTime
+                result.shift += specialTime
             }
         }
     }
-   
+    
     private func getStatusesWithEndDate(_ statuses: [Status], checkDate: Date) -> [Status] {
-        
+
         var workingCopy = statuses
         workingCopy.removeAll { $0.startDate.timeIntervalSince1970 >= checkDate.timeIntervalSince1970 }
+        workingCopy.setEndDate(checkDate)
+        workingCopy.draw()
+        workingCopy = workingCopy.joinedSame(with: .sb).joinedSame(with: .off).joinedRest()
+        workingCopy.draw()
         
-        var previousStatus: Status?
-        var st: [Status] = []
-        for i in 0 ..< workingCopy.count {
-            
-            if i + 1 == workingCopy.count {
-                workingCopy[i].setEndDate(checkDate)
+        return workingCopy.reversed()
+    }
+}
+
+
+extension Array where Element == Status {
+    
+    public mutating func setEndDate(_ checkDate: Date) {
+        for i in 0 ..< count {
+            if i + 1 == self.count {
+                self[i].setEndDate(checkDate)
             } else {
-                workingCopy[i].setEndDate(workingCopy[i + 1].startDate)
+                self[i].setEndDate(self[i + 1].startDate)
             }
-            
-            if previousStatus != nil,
-               previousStatus!.statusLength < longRestTime,
-               previousStatus!.isRest() && workingCopy[i].isRest(), workingCopy[i].statusLength < 7 * 3600 {
-                
-                previousStatus?.setEndDate(workingCopy[i].endDate!)
-            } else {
-                if previousStatus != nil  {
-                    st.append(previousStatus!)
+        }
+    }
+    
+    public func joinedSame(with type: StatusType) -> Self {
+        
+        var new: Self = []
+        var previous: Status?
+        
+        for element in self {
+            if element.type == type {
+                if previous == nil {
+                    previous = element
+                    previous?.setType(type)
+                    new.append(element)
                 }
-                previousStatus = workingCopy[i]
+            } else {
+                previous = nil
+                new.append(element)
             }
         }
         
-        st.append(previousStatus!)
+        new.setEndDate(new.last!.endDate!)
         
-        return st.reversed()
+        return new
+    }
+    
+    func joinedRest() -> Self {
+
+        var new: Self = []
+        var sub: Self = []
+
+        for element in self {
+            if element.isRest() {
+                sub.append(element)
+                if sub.map(\.statusLength).reduce(0, +) / 3600 >= 10 {
+                    var st = Status(type: .off, startDate: sub.first!.startDate)
+                    st.setEndDate(element.endDate!)
+                    sub = [st]
+                }
+            } else {
+                new.append(contentsOf: sub)
+                sub = []
+                new.append(element)
+            }
+        }
+        
+        new.append(contentsOf: sub)
+        
+        return new
+    }
+}
+
+extension String {
+    
+    func replace(_ index: Int, _ newChar: Character) -> String {
+        
+        var chars = Array(self)     // gets an array of characters
+        chars[index] = newChar
+        let modifiedString = String(chars)
+        return modifiedString
+    }
+}
+
+extension Array where Element == Status {
+    
+    @discardableResult
+    public func draw() -> String {
+        
+        let numberOfItems = Int(map(\.statusLength).reduce(0, +) / 3600)
+        var str = ""
+        for _ in 0 ..< 4 {
+            for _ in 0 ..< numberOfItems {
+                str.append(".")
+            }
+            str.append("\n")
+        }
+        
+        var totalH = 0
+        
+        for item in self {
+            let h = Int(item.statusLength / 3600)
+            for i in totalH ..< totalH + h {
+                str = str.replace(((numberOfItems) * (3 - item.type.rawValue)) + i, "-")
+            }
+            
+            totalH += h
+        }
+        
+        print(str)
+        return str
     }
 }

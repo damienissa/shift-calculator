@@ -7,16 +7,21 @@
 
 import Foundation
 
-public struct CalculationResult {
+public class CalculationResult {
     
-    public let shift: TimeInterval
-    public let drive: TimeInterval
-    public let maxTimeWithoutBreak: TimeInterval
+    public var drive: TimeInterval = 0
+    public var maxTimeWithoutBreak: TimeInterval = 0
+    public var shift: TimeInterval = 0 {
+        didSet {
+            if shift < drive {
+                drive = shift
+            }
+        }
+    }
     
-    public init(shift: TimeInterval, drive: TimeInterval, maxTimeWithoutBreak: TimeInterval) {
-        
-        self.shift = shift
-        self.drive = drive
-        self.maxTimeWithoutBreak = maxTimeWithoutBreak
+    public init(rule: ShiftRuleInSeconds) {
+        self.drive = rule.driveHours
+        self.shift = rule.shiftHours
+        self.maxTimeWithoutBreak = rule.breakHours
     }
 }

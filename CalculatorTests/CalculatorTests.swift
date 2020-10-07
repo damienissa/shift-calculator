@@ -372,8 +372,8 @@ class CalculatorTests: XCTestCase {
         let sut = makeSUT()
         
         let result = sut.calculate(statuses, on: .from(17), specials: [])
-        assert(result.drive, 0)
-        assert(result.shift, 0)
+        assert(result.drive, -3)
+        assert(result.shift, -3)
     }
     
     func test_EmptyStatus() {
@@ -639,6 +639,72 @@ class CalculatorTests: XCTestCase {
         let result = sut.calculate(statuses, on: .from(32), specials: [])
         assert(result.drive, -1)
         assert(result.shift, -1)
+    }
+    
+    func test_big_bigShift_twoSB() {
+        
+        let statuses = [
+            Status(type: .on, startDate: .from(0)),
+            Status(type: .driving, startDate: .from(1)),
+            Status(type: .off, startDate: .from(7)),
+            Status(type: .on, startDate: .from(10)),
+            Status(type: .driving, startDate: .from(12)),
+            Status(type: .off, startDate: .from(16)),
+            Status(type: .sb, startDate: .from(17)),
+            Status(type: .sb, startDate: .from(20)),
+            Status(type: .off, startDate: .from(24)),
+            Status(type: .driving, startDate: .from(25)),
+        ]
+        
+        let sut = makeSUT()
+        
+        let result = sut.calculate(statuses, on: .from(32), specials: [])
+        assert(result.drive, -1)
+        assert(result.shift, -1)
+    }
+    
+    func test_big_bigShift_multiple_SB() {
+        
+        let statuses = [
+            Status(type: .on, startDate: .from(0)),
+            Status(type: .driving, startDate: .from(1)),
+            Status(type: .off, startDate: .from(7)),
+            Status(type: .on, startDate: .from(10)),
+            Status(type: .driving, startDate: .from(12)),
+            Status(type: .off, startDate: .from(16)),
+            Status(type: .sb, startDate: .from(17)),
+            Status(type: .sb, startDate: .from(18)),
+            Status(type: .sb, startDate: .from(19)),
+            Status(type: .sb, startDate: .from(20)),
+            Status(type: .sb, startDate: .from(21)),
+            Status(type: .sb, startDate: .from(22)),
+            Status(type: .sb, startDate: .from(23)),
+            Status(type: .off, startDate: .from(24)),
+            Status(type: .driving, startDate: .from(25)),
+        ]
+        
+        let sut = makeSUT()
+        
+        let result = sut.calculate(statuses, on: .from(32), specials: [])
+        assert(result.drive, -1)
+        assert(result.shift, -1)
+    }
+    
+    func test_two_off_with_rest_shift() {
+        
+        let statuses = [
+            Status(type: .off, startDate: .from(0)),
+            Status(type: .on, startDate: .from(13)),
+            Status(type: .off, startDate: .from(14)),
+            Status(type: .sb, startDate: .from(16)),
+            Status(type: .off, startDate: .from(23)),
+        ]
+        
+        let sut = makeSUT()
+        
+        let result = sut.calculate(statuses, on: .from(24), specials: [])
+        assert(result.drive, 11)
+        assert(result.shift, 14)
     }
     
     func makeSUT() -> Calculator {
