@@ -15,6 +15,8 @@
 		152D79B02524702800372B35 /* CalculationResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 152D79AF2524702800372B35 /* CalculationResult.swift */; };
 		152D79B4252470C300372B35 /* ShiftRuleInSeconds.swift in Sources */ = {isa = PBXBuildFile; fileRef = 152D79B3252470C300372B35 /* ShiftRuleInSeconds.swift */; };
 		152D79B8252470D200372B35 /* Status.swift in Sources */ = {isa = PBXBuildFile; fileRef = 152D79B7252470D200372B35 /* Status.swift */; };
+		152D7B2C252DF9FF00372B35 /* RestContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 152D7B2B252DF9FF00372B35 /* RestContainer.swift */; };
+		152D7B30252DFA2A00372B35 /* Array+Status.swift in Sources */ = {isa = PBXBuildFile; fileRef = 152D7B2F252DFA2A00372B35 /* Array+Status.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -39,6 +41,8 @@
 		152D79AF2524702800372B35 /* CalculationResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalculationResult.swift; sourceTree = "<group>"; };
 		152D79B3252470C300372B35 /* ShiftRuleInSeconds.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShiftRuleInSeconds.swift; sourceTree = "<group>"; };
 		152D79B7252470D200372B35 /* Status.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Status.swift; sourceTree = "<group>"; };
+		152D7B2B252DF9FF00372B35 /* RestContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestContainer.swift; sourceTree = "<group>"; };
+		152D7B2F252DFA2A00372B35 /* Array+Status.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Array+Status.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -88,6 +92,8 @@
 				152D79AF2524702800372B35 /* CalculationResult.swift */,
 				152D79B3252470C300372B35 /* ShiftRuleInSeconds.swift */,
 				152D79B7252470D200372B35 /* Status.swift */,
+				152D7B2B252DF9FF00372B35 /* RestContainer.swift */,
+				152D7B2F252DFA2A00372B35 /* Array+Status.swift */,
 			);
 			path = Calculator;
 			sourceTree = "<group>";
@@ -213,6 +219,8 @@
 				152D79B02524702800372B35 /* CalculationResult.swift in Sources */,
 				152D79B8252470D200372B35 /* Status.swift in Sources */,
 				152D79A62523D7BF00372B35 /* Calculator.swift in Sources */,
+				152D7B2C252DF9FF00372B35 /* RestContainer.swift in Sources */,
+				152D7B30252DFA2A00372B35 /* Array+Status.swift in Sources */,
 				152D79AC2524700E00372B35 /* StatusSpecialsType.swift in Sources */,
 				152D79B4252470C300372B35 /* ShiftRuleInSeconds.swift in Sources */,
 			);

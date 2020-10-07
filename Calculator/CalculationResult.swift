@@ -12,9 +12,12 @@ public class CalculationResult {
     public var drive: TimeInterval = 0
     public var maxTimeWithoutBreak: TimeInterval = 0
     
-    public var cycleRestartTime: TimeInterval = 0
     public var cycle: TimeInterval = 0
     public var cycleDays: TimeInterval = 0
+    
+    public var tillRestartHours: TimeInterval = 0
+    public var date: Date = Date()
+    public var restartHoursCurrent: TimeInterval = 0
     
     public var shift: TimeInterval = 0 {
         didSet {
@@ -24,13 +27,15 @@ public class CalculationResult {
         }
     }
     
-    public init(rule: ShiftRuleInSeconds) {
+    public init(rule: ShiftRuleInSeconds, date: Date) {
         
         self.drive = rule.driveHours
         self.shift = rule.shiftHours
         self.maxTimeWithoutBreak = rule.breakHours
         self.cycle = rule.cycleHours
-        self.cycleRestartTime = rule.restartHours
         self.cycleDays = rule.inspectionDays
+        self.tillRestartHours = rule.shiftRestartHours
+        self.date = date
+        self.restartHoursCurrent = rule.restartHours
     }
 }

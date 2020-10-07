@@ -42,14 +42,20 @@ class CalculatorTests: XCTestCase {
         let result = sut.calculate(firstCase, on: .from(14), specials: [])
         assert(result.drive, 3)
         assert(result.shift, 3)
+        assert(result.cycle, 59)
+        assert(result.cycleDays, 178)
         
         let result2 = sut.calculate(firstCase, on: .from(17), specials: [])
         assert(result2.drive, 0)
         assert(result2.shift, 0)
+        assert(result2.cycle, 56)
+        assert(result2.cycleDays, 175)
         
         let result3 = sut.calculate(firstCase, on: .from(24), specials: [])
         assert(result3.drive, 6)
         assert(result3.shift, 7)
+        assert(result3.cycle, 56)
+        assert(result3.cycleDays, 168)
     }
     
     func test_secondCase() {
@@ -68,6 +74,8 @@ class CalculatorTests: XCTestCase {
         let result = sut.calculate(firstCase, on: .from(37), specials: [])
         assert(result.drive, -6.5)
         assert(result.shift, -5)
+        assert(result.cycle, 52.5)
+        assert(result.cycleDays, 155)
     }
     
     func test_noviolationData() {
@@ -88,13 +96,17 @@ class CalculatorTests: XCTestCase {
         
         let sut = makeSUT()
         
-        let result2 = sut.calculate(statuses, on: .from(26), specials: [.hourException])
-        assert(result2.drive, 0)
-        assert(result2.shift, 0)
-        
         let result = sut.calculate(statuses, on: .from(36), specials: [.hourException])
         assert(result.drive, 11)
         assert(result.shift, 14)
+        assert(result.cycle, 56)
+        assert(result.cycleDays, 156)
+        
+        let result2 = sut.calculate(statuses, on: .from(26), specials: [.hourException])
+        assert(result2.drive, 0)
+        assert(result2.shift, 0)
+        assert(result2.cycle, 56)
+        assert(result2.cycleDays, 166)
     }
     
     func test_violationData() {
@@ -117,6 +129,8 @@ class CalculatorTests: XCTestCase {
         let result2 = sut.calculate(statuses, on: .from(36), specials: [.hourException])
         assert(result2.drive, -1)
         assert(result2.shift, -1)
+        assert(result2.cycle, 55)
+        assert(result2.cycleDays, 156)
     }
     
     func test_34Restart() {
@@ -141,14 +155,27 @@ class CalculatorTests: XCTestCase {
         let result = sut.calculate(statuses, on: .from(48), specials: [])
         assert(result.drive, 0)
         assert(result.shift, 0)
+        assert(result.cycle, 57)
+        assert(result.cycleDays, 178)
         
         let result2 = sut.calculate(statuses, on: .from(64), specials: [])
         assert(result2.drive, 6)
         assert(result2.shift, 8)
+        assert(result2.cycle, 52)
+        assert(result2.cycleDays, 162)
         
         let result3 = sut.calculate(statuses, on: .from(72), specials: [])
         assert(result3.drive, 0)
         assert(result3.shift, 0)
+        assert(result3.cycle, 44)
+        assert(result3.cycleDays, 154)
+        
+        let result4 = sut.calculate(statuses, on: .from(41), specials: [])
+        assert(result4.drive, 5)
+        assert(result4.shift, 7)
+        assert(result4.cycle, 64)
+        assert(result4.cycleDays, 185)
+        assert(result4.tillRestartHours, 10)
     }
     
     func test_testCaseFromDmytro() {
@@ -163,6 +190,8 @@ class CalculatorTests: XCTestCase {
         let result = sut.calculate(statuses, on: .from(28.5), specials: [])
         assert(result.drive, 11)
         assert(result.shift, 14)
+        assert(result.cycle, 70)
+        assert(result.cycleDays, 163.5)
     }
     
     func test_testAdverseDrivingConditions() {
@@ -182,10 +211,14 @@ class CalculatorTests: XCTestCase {
         let result = sut.calculate(statuses, on: .from(15), specials: [.adverseDriving])
         assert(result.drive, 1)
         assert(result.shift, 1)
+        assert(result.cycle, 57)
+        assert(result.cycleDays, 177)
         
         let result2 = sut.calculate(statuses, on: .from(25), specials: [.adverseDriving])
         assert(result2.drive, 11)
         assert(result2.shift, 14)
+        assert(result2.cycle, 57)
+        assert(result2.cycleDays, 167)
     }
     
     func test_testAdverseDrivingConditionsWithHourException() {
@@ -205,10 +238,14 @@ class CalculatorTests: XCTestCase {
         let result = sut.calculate(statuses, on: .from(15), specials: [.adverseDriving, .hourException])
         assert(result.drive, 1)
         assert(result.shift, 1)
+        assert(result.cycle, 57)
+        assert(result.cycleDays, 177)
         
         let result2 = sut.calculate(statuses, on: .from(25), specials: [.adverseDriving, .hourException])
         assert(result2.drive, 11)
         assert(result2.shift, 14)
+        assert(result2.cycle, 57)
+        assert(result2.cycleDays, 167)
     }
     
     func test_30Min_Changes() {
@@ -228,6 +265,8 @@ class CalculatorTests: XCTestCase {
         let result = sut.calculate(statuses, on: .from(15), specials: [.adverseDriving])
         assert(result.drive, 1)
         assert(result.shift, 1)
+        assert(result.cycle, 57)
+        assert(result.cycleDays, 177)
     }
     
     func test_sleeperBerth2Days() {
@@ -252,6 +291,8 @@ class CalculatorTests: XCTestCase {
         let result = sut.calculate(statuses, on: .from(48), specials: [])
         assert(result.drive, 2)
         assert(result.shift, 5)
+        assert(result.cycle, 46)
+        assert(result.cycleDays, 144)
     }
     
     func test_sleeperBerth() {
@@ -270,6 +311,8 @@ class CalculatorTests: XCTestCase {
         let result = sut.calculate(statuses, on: .from(14), specials: [])
         assert(result.drive, 2)
         assert(result.shift, 4)
+        assert(result.cycle, 60)
+        assert(result.cycleDays, 178)
     }
     
     func test_example19() {
@@ -294,22 +337,32 @@ class CalculatorTests: XCTestCase {
         let result = sut.calculate(statuses, on: .from(2), specials: [])
         assert(result.drive, 11)
         assert(result.shift, 14)
+        assert(result.cycle, 70)
+        assert(result.cycleDays, 182)
         
         let result2 = sut.calculate(statuses, on: .from(10), specials: [])
         assert(result2.drive, 6)
         assert(result2.shift, 8)
+        assert(result2.cycle, 64)
+        assert(result2.cycleDays, 174)
         
         let result3 = sut.calculate(statuses, on: .from(24), specials: [])
         assert(result3.drive, 5)
         assert(result3.shift, 8)
+        assert(result3.cycle, 58)
+        assert(result3.cycleDays, 160)
         
         let result4 = sut.calculate(statuses, on: .from(24 + 7), specials: [])
         assert(result4.drive, 7)
         assert(result4.shift, 9)
+        assert(result4.cycle, 53)
+        assert(result4.cycleDays, 153)
         
         let result5 = sut.calculate(statuses, on: .from(48), specials: [])
         assert(result5.drive, 2)
         assert(result5.shift, 5)
+        assert(result5.cycle, 44)
+        assert(result5.cycleDays, 136)
     }
     
     func test_30MinutesBreakeChanges() {
@@ -330,11 +383,15 @@ class CalculatorTests: XCTestCase {
         assert(result.drive, 1)
         assert(result.shift, 3.5)
         assert(result.maxTimeWithoutBreak, -2)
+        assert(result.cycle, 59.5)
+        assert(result.cycleDays, 181.5)
         
         let result2 = sut.calculate(statuses, on: .from(14), specials: [])
         assert(result2.drive, 0)
         assert(result2.shift, 0)
         assert(result2.maxTimeWithoutBreak, -2)
+        assert(result2.cycle, 56)
+        assert(result2.cycleDays, 178)
     }
     
     func test_30MinutesBreakeChanges_Violation() {
@@ -353,6 +410,8 @@ class CalculatorTests: XCTestCase {
         assert(result.drive, 2.5)
         assert(result.shift, 4.5)
         assert(result.maxTimeWithoutBreak, 8)
+        assert(result.cycle, 60.5)
+        assert(result.cycleDays, 182.5)
     }
     
     func test_shiftViolation() {
@@ -374,6 +433,8 @@ class CalculatorTests: XCTestCase {
         let result = sut.calculate(statuses, on: .from(17), specials: [])
         assert(result.drive, -3)
         assert(result.shift, -3)
+        assert(result.cycle, 56)
+        assert(result.cycleDays, 175)
     }
     
     func test_EmptyStatus() {
@@ -403,6 +464,8 @@ class CalculatorTests: XCTestCase {
         let result = sut.calculate(statuses, on: .from(24), specials: [])
         assert(result.drive, 0)
         assert(result.shift, 0)
+        assert(result.cycle, 58)
+        assert(result.cycleDays, 168)
     }
     
     func test_11Violation_() {
@@ -442,6 +505,8 @@ class CalculatorTests: XCTestCase {
         let result = sut.calculate(statuses, on: .from(11.5), specials: [])
         assert(result.drive, 0)
         assert(result.shift, 2.5)
+        assert(result.cycle, 59)
+        assert(result.cycleDays, 180.5)
     }
     
     func test_offMoreThan30Viol() {
@@ -458,6 +523,8 @@ class CalculatorTests: XCTestCase {
         let result = sut.calculate(statuses, on: .from(11.5), specials: [])
         assert(result.drive, -0.05)
         assert(result.shift, 2.5)
+        assert(result.cycle, 58.95)
+        assert(result.cycleDays, 180.5)
     }
     
     func test_sbMoreThan30() {
@@ -705,6 +772,43 @@ class CalculatorTests: XCTestCase {
         let result = sut.calculate(statuses, on: .from(24), specials: [])
         assert(result.drive, 11)
         assert(result.shift, 14)
+    }
+    
+    func test_two_off_with_rest_two_long_shift() {
+        
+        let statuses = [
+            Status(type: .driving, startDate: .from(0)),
+            Status(type: .sb, startDate: .from(1)),
+            Status(type: .driving, startDate: .from(8)),
+            Status(type: .sb, startDate: .from(9)),
+            Status(type: .driving, startDate: .from(16)),
+            Status(type: .off, startDate: .from(21)),
+        ]
+        
+        let sut = makeSUT()
+        
+        let result = sut.calculate(statuses, on: .from(16), specials: [])
+        assert(result.drive, 10)
+        assert(result.shift, 13)
+    }
+    
+    func test_two_off_with_rest_two_long_shift_date() {
+        
+        let statuses = [
+            Status(type: .driving, startDate: .from(0)),
+            Status(type: .sb, startDate: .from(1)),
+            Status(type: .driving, startDate: .from(8)),
+            Status(type: .sb, startDate: .from(9)),
+            Status(type: .driving, startDate: .from(16)),
+            Status(type: .off, startDate: .from(21)),
+        ]
+        
+        let sut = makeSUT()
+        
+        let result = sut.calculate(statuses, on: .from(16), specials: [])
+        assert(result.drive, 10)
+        assert(result.shift, 13)
+        assert(result.date.timeIntervalSince1970, 16)
     }
     
     func makeSUT() -> Calculator {

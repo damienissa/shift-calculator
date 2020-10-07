@@ -20,6 +20,7 @@ public struct Status {
     public let startDate: Date
     public var type: StatusType
     public var endDate: Date?
+    public var restart: TimeInterval = 0
     
     public var statusLength: TimeInterval {
         endDate == nil ? 0 : endDate!.timeIntervalSince1970 - startDate.timeIntervalSince1970
@@ -40,5 +41,9 @@ public struct Status {
     
     public func isRest() -> Bool {
         type == .sb || type == .off
+    }
+    
+    public func isWorking() -> Bool {
+        type == .on || type == .driving
     }
 }
