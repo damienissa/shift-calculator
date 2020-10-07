@@ -116,25 +116,29 @@ public class Calc: Calculator {
         } else {
             result.shift -= status.statusLength
         }
+        
+        result.cycleDays -= status.statusLength
     }
     
     private func fillOnStatus(_ status: Status) {
         
+        result.cycle -= status.statusLength
         result.shift -= status.statusLength
+        result.cycleDays -= status.statusLength
     }
     
     private func fillDrivingStatus(_ status: Status) {
         
         result.drive -= status.statusLength
         result.shift -= status.statusLength
+        result.cycle -= status.statusLength
+        result.cycleDays -= status.statusLength
         result.maxTimeWithoutBreak -= status.statusLength
     }
     
     private func reset() {
         
-        result.drive = rule.driveHours
-        result.shift = rule.shiftHours
-        result.maxTimeWithoutBreak = rule.breakHours
+        result = CalculationResult(rule: rule)
         restChain.clear()
         reseted = false
     }
@@ -159,7 +163,6 @@ public class Calc: Calculator {
         var workingCopy = statuses
         workingCopy.removeAll { $0.startDate.timeIntervalSince1970 >= checkDate.timeIntervalSince1970 }
         workingCopy.setEndDate(checkDate)
-        workingCopy.draw()
         workingCopy = workingCopy.joinedSame(with: .sb).joinedSame(with: .off).joinedRest()
         workingCopy.draw()
         
@@ -259,7 +262,7 @@ extension Array where Element == Status {
         for item in self {
             let h = Int(item.statusLength / 3600)
             for i in totalH ..< totalH + h {
-                str = str.replace(((numberOfItems) * (3 - item.type.rawValue)) + i, "-")
+                str = str.replace(((numberOfItems + 1) * (3 - item.type.rawValue)) + i, "-")
             }
             
             totalH += h
