@@ -7,7 +7,7 @@
 
 import Foundation
 
-public enum StatusType: Int {
+public enum StatusType: Int, Codable {
     
     case on
     case driving
@@ -15,7 +15,7 @@ public enum StatusType: Int {
     case off
 }
 
-public struct Status {
+public struct Status: Decodable {
     
     public let startDate: Date
     public var type: StatusType

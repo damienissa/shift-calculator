@@ -84,11 +84,16 @@ public class Calc: Calculator {
     
     private func fillCycle(_ st: [Status]) {
         
+        result.restartHoursCurrent = st.first?.restart ?? rule.restartHours
+        
         for status in st.reversed() {
             
             if status.isWorking() {
                 
                 result.cycle -= status.statusLength
+                result.restartHoursCurrent = rule.restartHours
+            } else {
+                result.restartHoursCurrent -= status.statusLength
             }
             
             result.cycleDays -= status.statusLength
@@ -197,7 +202,7 @@ extension Array where Element == Status {
         var str = ""
         for _ in 0 ..< 4 {
             for _ in 0 ..< numberOfItems {
-                str.append(".")
+                str.append("_")
             }
             str.append("\n")
         }
@@ -207,12 +212,13 @@ extension Array where Element == Status {
         for item in self {
             let h = Int(item.statusLength / 3600)
             for i in totalH ..< totalH + h {
-                str = str.replace(((numberOfItems + 1) * (3 - item.type.rawValue)) + i, "-")
+                str = str.replace(((numberOfItems + 1) * (3 - item.type.rawValue)) + i, "●")
             }
             
             totalH += h
         }
-        
+        str = "\n\n-----------------------------------------------------------------\n\n" + str
+        str.append("\n\n-----------------------------------------------------------------\n\n")
         print(str)
         return str
     }

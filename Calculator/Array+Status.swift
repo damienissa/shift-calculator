@@ -37,7 +37,7 @@ extension Array where Element == Status {
             }
         }
         
-        new.setEndDate(new.last!.endDate!)
+        new.setEndDate(new.last?.endDate ?? Date())
         
         return new
     }

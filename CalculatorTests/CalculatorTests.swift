@@ -136,6 +136,7 @@ class CalculatorTests: XCTestCase {
     func test_34Restart() {
         
         let statuses = [
+            Status(type: .driving, startDate: .from(-6)),
             Status(type: .off, startDate: .from(0)),
             Status(type: .driving, startDate: .from(34)),
             Status(type: .off, startDate: .from(40)),
@@ -169,6 +170,7 @@ class CalculatorTests: XCTestCase {
         assert(result3.shift, 0)
         assert(result3.cycle, 44)
         assert(result3.cycleDays, 154)
+        assert(result3.restartHoursCurrent, 34)
         
         let result4 = sut.calculate(statuses, on: .from(41), specials: [])
         assert(result4.drive, 5)
@@ -176,6 +178,9 @@ class CalculatorTests: XCTestCase {
         assert(result4.cycle, 64)
         assert(result4.cycleDays, 185)
         assert(result4.tillRestartHours, 10)
+
+        let result5 = sut.calculate(statuses, on: .from(34), specials: [])
+        assert(result5.restartHoursCurrent, 0)
     }
     
     func test_testCaseFromDmytro() {
@@ -310,7 +315,7 @@ class CalculatorTests: XCTestCase {
         
         let result = sut.calculate(statuses, on: .from(14), specials: [])
         assert(result.drive, 2)
-        assert(result.shift, 4)
+        assert(result.shift, 2)
         assert(result.cycle, 60)
         assert(result.cycleDays, 178)
     }
@@ -454,18 +459,18 @@ class CalculatorTests: XCTestCase {
             Status(type: .driving, startDate: .from(16.5)),
             Status(type: .sb, startDate: .from(22)),
             Status(type: .on, startDate: .from(24)),
-            Status(type: .sb, startDate: .from(24.5)),
-            Status(type: .driving, startDate: .from(28.75)),
+            Status(type: .sb, startDate: .from(25)),
+            Status(type: .driving, startDate: .from(28)),
             Status(type: .sb, startDate: .from(29)),
         ]
         
         let sut = makeSUT()
         
-        let result = sut.calculate(statuses, on: .from(24), specials: [])
-        assert(result.drive, 0)
-        assert(result.shift, 0)
-        assert(result.cycle, 58)
-        assert(result.cycleDays, 168)
+        let result = sut.calculate(statuses, on: .from(29), specials: [])
+        assert(result.drive, -5)
+        assert(result.shift, -5)
+        assert(result.cycle, 56)
+        assert(result.cycleDays, 163)
     }
     
     func test_11Violation_() {
@@ -811,6 +816,57 @@ class CalculatorTests: XCTestCase {
         assert(result.date.timeIntervalSince1970, 16)
     }
     
+    func test_two_sb() {
+        
+        let statuses = [
+            Status(type: .on, startDate: .from(0)),
+            Status(type: .driving, startDate: .from(1)),
+            Status(type: .off, startDate: .from(7)),
+            Status(type: .on, startDate: .from(10)),
+            Status(type: .sb, startDate: .from(12)),
+            Status(type: .driving, startDate: .from(14)),
+            Status(type: .sb, startDate: .from(17)),
+        ]
+        
+        let sut = makeSUT()
+        
+        let result = sut.calculate(statuses, on: .from(24), specials: [])
+        assert(result.drive, 10)
+        assert(result.shift, 13)
+        assert(result.date.timeIntervalSince1970, 24)
+    }
+    
+    func test_new_restart() {
+
+        let statuses = realStatuses
+
+        let sut = makeSUT()
+
+        let result = sut.calculate(statuses, on: Date(timeIntervalSince1970: 1602201600), specials: [])
+        assert(result.drive, 11)
+        assert(result.shift, 14)
+        assert(result.cycle, 70)
+        assert(result.cycleDays, 192)
+        assert(result.tillRestartHours, 0)
+        assert(result.restartHoursCurrent, -13.75)
+
+        /*
+         {
+             cycle = 252000;
+             date = "2020-10-09 00:00:00 +0000";
+             drive = 39600;
+             hadCan24Break = 1;
+             realShiftValue = 50400;
+             restart34Hours = "-49500";
+             shift = 50400;
+             shiftWork = 359996400;
+             tillBreakFinish = 0;
+             tillRestartHours = 0;
+             tot8Hours = 28800;
+         }
+         */
+    }
+    
     func makeSUT() -> Calculator {
         Calc()
     }
@@ -820,3 +876,275 @@ func assert(_ result: TimeInterval, _ expected: TimeInterval, file: StaticString
     
     XCTAssert(result == expected * 3600, "Difference: \((result - expected * 3600) / 3600), Expected: \(expected), Actual: \((result / 3600))", file: file, line: line)
 }
+
+
+var realStatuses: [Status] {
+    let decoder = JSONDecoder()
+    decoder.dateDecodingStrategy = .secondsSince1970
+    return (try? decoder.decode([Status].self, from: realStatusesFromELDAccount.data(using: .utf8)!)) ?? []
+}
+
+let realStatusesFromELDAccount =
+    """
+[{
+    "startDate": 1599801300,
+    "type": 1,
+    "endDate": 1600276500,
+    "restart": 122400
+}, {
+    "startDate": 1600276500,
+    "type": 3,
+    "endDate": 1600732800,
+    "restart": 122400
+}, {
+    "startDate": 1600732800,
+    "type": 0,
+    "endDate": 1600736400,
+    "restart": -333645
+}, {
+    "startDate": 1600736400,
+    "type": 1,
+    "endDate": 1600761600,
+    "restart": 122400
+}, {
+    "startDate": 1600761600,
+    "type": 2,
+    "endDate": 1600763400,
+    "restart": 122400
+}, {
+    "startDate": 1600763400,
+    "type": 1,
+    "endDate": 1600777800,
+    "restart": 120600
+}, {
+    "startDate": 1600777800,
+    "type": 3,
+    "endDate": 1600781400,
+    "restart": 122400
+}, {
+    "startDate": 1600781400,
+    "type": 2,
+    "endDate": 1600819200,
+    "restart": 118800
+}, {
+    "startDate": 1600819200,
+    "type": 0,
+    "endDate": 1600822800,
+    "restart": 81000
+}, {
+    "startDate": 1600822800,
+    "type": 1,
+    "endDate": 1600844400,
+    "restart": 122400
+}, {
+    "startDate": 1600844400,
+    "type": 3,
+    "endDate": 1600855200,
+    "restart": 122400
+}, {
+    "startDate": 1600855200,
+    "type": 0,
+    "endDate": 1600862400,
+    "restart": 111600
+}, {
+    "startDate": 1600862400,
+    "type": 1,
+    "endDate": 1600880400,
+    "restart": 122400
+}, {
+    "startDate": 1600880400,
+    "type": 2,
+    "endDate": 1600905600,
+    "restart": 122400
+}, {
+    "startDate": 1600905600,
+    "type": 3,
+    "endDate": 1600992000,
+    "restart": 97200
+}, {
+    "startDate": 1600992000,
+    "type": 0,
+    "endDate": 1601021700,
+    "restart": 10800
+}, {
+    "startDate": 1601021700,
+    "type": 1,
+    "endDate": 1601021700,
+    "restart": 122400
+}, {
+    "startDate": 1601021700,
+    "type": 3,
+    "endDate": 1601078400,
+    "restart": 122400
+}, {
+    "startDate": 1601078400,
+    "type": 0,
+    "endDate": 1601082000,
+    "restart": 66408
+}, {
+    "startDate": 1601082000,
+    "type": 1,
+    "endDate": 1601103600,
+    "restart": 122400
+}, {
+    "startDate": 1601103600,
+    "type": 3,
+    "endDate": 1601114400,
+    "restart": 122400
+}, {
+    "startDate": 1601114400,
+    "type": 0,
+    "endDate": 1601121600,
+    "restart": 111600
+}, {
+    "startDate": 1601121600,
+    "type": 1,
+    "endDate": 1601139600,
+    "restart": 122400
+}, {
+    "startDate": 1601139600,
+    "type": 2,
+    "endDate": 1601164800,
+    "restart": 122400
+}, {
+    "startDate": 1601164800,
+    "type": 3,
+    "endDate": 1601251200,
+    "restart": 97200
+}, {
+    "startDate": 1601251200,
+    "type": 3,
+    "endDate": 1601337600,
+    "restart": 10800
+}, {
+    "startDate": 1601337600,
+    "type": 3,
+    "endDate": 1601424000,
+    "restart": -50400
+}, {
+    "startDate": 1601424000,
+    "type": 3,
+    "endDate": 1601510400,
+    "restart": -136800
+}, {
+    "startDate": 1601510400,
+    "type": 0,
+    "endDate": 1601514000,
+    "restart": -223200
+}, {
+    "startDate": 1601514000,
+    "type": 1,
+    "endDate": 1601532000,
+    "restart": 122400
+}, {
+    "startDate": 1601532000,
+    "type": 3,
+    "endDate": 1601542800,
+    "restart": 122400
+}, {
+    "startDate": 1601542800,
+    "type": 0,
+    "endDate": 1601550000,
+    "restart": 111600
+}, {
+    "startDate": 1601550000,
+    "type": 1,
+    "endDate": 1601596800,
+    "restart": 122400
+}, {
+    "startDate": 1601596800,
+    "type": 3,
+    "endDate": 1601683200,
+    "restart": 122400
+}, {
+    "startDate": 1601683200,
+    "type": 3,
+    "endDate": 1601733600,
+    "restart": 36000
+}, {
+    "startDate": 1601733600,
+    "type": 3,
+    "endDate": 1601769600,
+    "restart": -14400
+}, {
+    "startDate": 1601769600,
+    "type": 3,
+    "endDate": 1601787600,
+    "restart": -50400
+}, {
+    "startDate": 1601787600,
+    "type": 0,
+    "endDate": 1601791200,
+    "restart": -68400
+}, {
+    "startDate": 1601791200,
+    "type": 1,
+    "endDate": 1601802000,
+    "restart": 122400
+}, {
+    "startDate": 1601802000,
+    "type": 3,
+    "endDate": 1601809200,
+    "restart": 122400
+}, {
+    "startDate": 1601809200,
+    "type": 0,
+    "endDate": 1601812800,
+    "restart": 115200
+}, {
+    "startDate": 1601812800,
+    "type": 3,
+    "endDate": 1601856000,
+    "restart": 122400
+}, {
+    "startDate": 1601856000,
+    "type": 3,
+    "endDate": 1601920800,
+    "restart": 79200
+}, {
+    "startDate": 1601920800,
+    "type": 0,
+    "endDate": 1601924400,
+    "restart": 14400
+}, {
+    "startDate": 1601924400,
+    "type": 1,
+    "endDate": 1601942400,
+    "restart": 122400
+}, {
+    "startDate": 1601942400,
+    "type": 1,
+    "endDate": 1601946000,
+    "restart": 122400
+}, {
+    "startDate": 1601946000,
+    "type": 3,
+    "endDate": 1601956800,
+    "restart": 122400
+}, {
+    "startDate": 1601956800,
+    "type": 0,
+    "endDate": 1601964000,
+    "restart": 111600
+}, {
+    "startDate": 1601964000,
+    "type": 1,
+    "endDate": 1602028800,
+    "restart": 122400
+}, {
+    "startDate": 1602028800,
+    "type": 1,
+    "endDate": 1602029700,
+    "restart": 122400
+}, {
+    "startDate": 1602029700,
+    "type": 3,
+    "endDate": 1602115200,
+    "restart": 122400
+}, {
+    "startDate": 1602115200,
+    "type": 3,
+    "endDate": 1602125100,
+    "restart": 122400
+}]
+"""

@@ -8,7 +8,7 @@
 import Foundation
 
 public struct RestContainer {
-    
+    private let bigRest = 7 * 3600.0
     private var maxValue: TimeInterval
     private var finished: () -> Void
     private var chain: [TimeInterval] = []
@@ -23,8 +23,11 @@ public struct RestContainer {
         var element = 0.0
         if chain.count == 2 {
             element = chain.removeFirst()
+        } else if rest < bigRest && (chain.first ?? bigRest) < bigRest {
+            element = rest
+        } else {
+            chain.append(rest)
         }
-        chain.append(rest)
         
         if chain.reduce(0, +) >= maxValue {
             finished()

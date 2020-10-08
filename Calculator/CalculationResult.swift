@@ -9,15 +9,15 @@ import Foundation
 
 public class CalculationResult {
     
-    public var drive: TimeInterval = 0
-    public var maxTimeWithoutBreak: TimeInterval = 0
+    public var drive: TimeInterval
+    public var maxTimeWithoutBreak: TimeInterval
     
-    public var cycle: TimeInterval = 0
-    public var cycleDays: TimeInterval = 0
+    public var cycle: TimeInterval
+    public var cycleDays: TimeInterval
     
-    public var tillRestartHours: TimeInterval = 0
-    public var date: Date = Date()
-    public var restartHoursCurrent: TimeInterval = 0
+    public var tillRestartHours: TimeInterval
+    public var date: Date
+    public var restartHoursCurrent: TimeInterval
     
     public var shift: TimeInterval = 0 {
         didSet {
