@@ -7,7 +7,7 @@
 
 import Foundation
 
-public enum StatusSpecialsType {
+public enum EZSCStatusSpecialsType: Int {
     
     case hourException
     case adverseDriving

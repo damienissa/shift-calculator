@@ -7,7 +7,7 @@
 
 import Foundation
 
-public class CalculationResult {
+public class EZSCCalculationResult {
     
     public var drive: TimeInterval
     public var maxTimeWithoutBreak: TimeInterval
@@ -19,6 +19,9 @@ public class CalculationResult {
     public var date: Date
     public var restartHoursCurrent: TimeInterval
     
+    public var splitDate: Date?
+    
+    public var shiftCandidate: TimeInterval = 0
     public var shift: TimeInterval = 0 {
         didSet {
             if shift < drive {
@@ -27,7 +30,7 @@ public class CalculationResult {
         }
     }
     
-    public init(rule: ShiftRuleInSeconds, date: Date) {
+    public init(rule: EZShiftRule, date: Date) {
         
         self.drive = rule.driveHours
         self.shift = rule.shiftHours

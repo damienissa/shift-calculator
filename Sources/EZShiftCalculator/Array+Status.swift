@@ -7,7 +7,7 @@
 
 import Foundation
 
-extension Array where Element == Status {
+extension Array where Element == EZSCStatus {
     
     public mutating func setEndDate(_ checkDate: Date) {
         for i in 0 ..< count {
@@ -19,10 +19,10 @@ extension Array where Element == Status {
         }
     }
     
-    public func joinedSame(with type: StatusType) -> Self {
+    public func joinedSame(with type: EZSCStatusType) -> Self {
         
         var new: Self = []
-        var previous: Status?
+        var previous: EZSCStatus?
         
         for element in self {
             if element.type == type {
@@ -51,7 +51,34 @@ extension Array where Element == Status {
             if element.isRest() {
                 sub.append(element)
                 if sub.map(\.statusLength).reduce(0, +) >= minRestValue {
-                    var st = Status(type: .off, startDate: sub.first!.startDate)
+                    var st = EZSCStatus(type: .sb, startDate: sub.first!.startDate)
+                    st.setEndDate(element.endDate!)
+                    sub = [st]
+                }
+            } else {
+                new.append(contentsOf: sub)
+                sub = []
+                new.append(element)
+            }
+        }
+        
+        new.append(contentsOf: sub)
+        
+        return new
+    }
+    
+    public func joinedRest() -> Self {
+
+        var new: Self = []
+        var sub: Self = []
+        
+        let maxRestValue = 7 * 3600.0
+
+        for element in self {
+            if element.isRest() {
+                sub.append(element)
+                if sub.map(\.statusLength).reduce(0, +) <= maxRestValue {
+                    var st = EZSCStatus(type: .sb, startDate: sub.first!.startDate)
                     st.setEndDate(element.endDate!)
                     sub = [st]
                 }

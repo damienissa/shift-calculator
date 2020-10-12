@@ -9,48 +9,48 @@ import Foundation
 
 let hInSec = 3600.0
 
-public protocol Calculator {
-    
-    func calculate(_ statuses: [Status], on date: Date, specials: [StatusSpecialsType]) -> CalculationResult
+public protocol RuleProvider {
+    func getRule(for date: Date) -> EZShiftRule
 }
 
-
-
-public class Calc: Calculator {
+public class EZShiftCalculator {
     
-    private let rule = ShiftRuleInSeconds()
+    private let provider: RuleProvider
     private let longRestTime = 7.0 * hInSec
     private let shortRestTime = 2.0 * hInSec
     private let specialTime = 2.0 * hInSec
     private let halfHour = 0.5 * hInSec
     
+    private var rule: EZShiftRule = ShiftRuleInSeconds()
     private var reseted = false
     private var needCheckTillRestart = true
     
     // MARK: - Calculated values
     
-    private var result: CalculationResult
+    private var result: EZSCCalculationResult
     private var restChain: RestContainer!
     
     
     // MARK: - Lifecycle
     
-    public init() {
+    public init(_ provider: RuleProvider) {
         
-        result = CalculationResult.init(rule: rule, date: Date())
-        restChain = RestContainer(finished: {
+        self.provider = provider
+        result = EZSCCalculationResult.init(rule: rule, date: Date())
+        restChain = RestContainer(finished: { status in
             self.reseted = true
+            self.result.splitDate = status?.endDate
         }, maxValue: rule.shiftRestartHours)
     }
     
     
     // MARK: - Actions
     
-    public func calculate(_ st: [Status], on date: Date, specials: [StatusSpecialsType] = []) -> CalculationResult {
+    public func calculate(_ st: [EZSCStatus], on date: Date, specials: [EZSCStatusSpecialsType] = []) -> EZSCCalculationResult {
         
         reset(date: date)
         
-        let statuses = getStatusesWithEndDate(st, checkDate: date)
+        let statuses = getEZSCStatusesWithEndDate(st, checkDate: date)
         fillSpecials(specials)
         
         fillCycle(statuses)
@@ -67,11 +67,11 @@ public class Calc: Calculator {
             }
             switch status.type {
             case .driving:
-                fillDrivingStatus(status)
+                fillDrivingEZSCStatus(status)
             case .sb, .off:
-                fillRestStatus(status)
+                fillRestEZSCStatus(status)
             case .on:
-                fillOnStatus(status)
+                fillOnEZSCStatus(status)
             }
             
             if status.type != .driving && status.statusLength > halfHour {
@@ -79,10 +79,13 @@ public class Calc: Calculator {
             }
         }
         
+        result.shiftCandidate = result.shift + restChain.value
+        result.shift -= restChain.value
+        
         return result
     }
     
-    private func fillCycle(_ st: [Status]) {
+    private func fillCycle(_ st: [EZSCStatus]) {
         
         result.restartHoursCurrent = st.first?.restart ?? rule.restartHours
         
@@ -106,12 +109,16 @@ public class Calc: Calculator {
         }
     }
     
-    private func fillRestStatus(_ status: Status) {
+    private func fillRestEZSCStatus(_ status: EZSCStatus) {
+        
+        guard status.statusLength < rule.shiftRestartHours else {
+            return (reseted = true)
+        }
         
         if status.statusLength >= longRestTime && status.type == .sb {
-            result.shift -= restChain.insert(status.statusLength)
+            result.shift -= restChain.insert(status)?.statusLength ?? 0
         } else if status.statusLength >= shortRestTime {
-            result.shift -= restChain.insert(status.statusLength)
+            result.shift -= restChain.insert(status)?.statusLength ?? 0
         } else {
             result.shift -= status.statusLength
         }
@@ -121,13 +128,13 @@ public class Calc: Calculator {
         }
     }
     
-    private func fillOnStatus(_ status: Status) {
+    private func fillOnEZSCStatus(_ status: EZSCStatus) {
         
         result.shift -= status.statusLength
         needCheckTillRestart = false
     }
     
-    private func fillDrivingStatus(_ status: Status) {
+    private func fillDrivingEZSCStatus(_ status: EZSCStatus) {
         
         result.drive -= status.statusLength
         result.shift -= status.statusLength
@@ -139,7 +146,7 @@ public class Calc: Calculator {
     
     private func reset(date: Date) {
         
-        result = CalculationResult(rule: rule, date: date)
+        result = EZSCCalculationResult(rule: provider.getRule(for: date), date: date)
         restChain.clear()
         reseted = false
     }
@@ -152,7 +159,7 @@ public class Calc: Calculator {
         reseted = false
     }
     
-    private func fillSpecials(_ specials: [StatusSpecialsType]) {
+    private func fillSpecials(_ specials: [EZSCStatusSpecialsType]) {
         
         specials.forEach {
             switch $0 {
@@ -167,14 +174,14 @@ public class Calc: Calculator {
         }
     }
     
-    private func getStatusesWithEndDate(_ statuses: [Status], checkDate: Date) -> [Status] {
+    private func getEZSCStatusesWithEndDate(_ statuses: [EZSCStatus], checkDate: Date) -> [EZSCStatus] {
         
         var workingCopy = statuses
         workingCopy.removeAll { $0.startDate.timeIntervalSince1970 >= checkDate.timeIntervalSince1970 }
         workingCopy.setEndDate(checkDate)
-        workingCopy = workingCopy.joinedSame(with: .sb).joinedSame(with: .off).joinedRest(rule.shiftRestartHours)
+        workingCopy = workingCopy.joinedSame(with: .sb).joinedSame(with: .off).joinedRest(rule.shiftRestartHours).joinedRest()
         #if DEBUG
-        workingCopy.draw()
+//        workingCopy.draw()
         #endif
         
         return workingCopy.reversed()
@@ -193,7 +200,7 @@ extension String {
     }
 }
 
-extension Array where Element == Status {
+extension Array where Element == EZSCStatus {
     
     @discardableResult
     public func draw() -> String {

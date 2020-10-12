@@ -7,7 +7,19 @@
 
 import Foundation
 
-public struct ShiftRuleInSeconds {
+public protocol EZShiftRule {
+    
+    var days: TimeInterval { get }
+    var inspectionDays: TimeInterval { get }
+    var cycleHours: TimeInterval { get }
+    var shiftHours: TimeInterval { get }
+    var driveHours: TimeInterval { get }
+    var restartHours: TimeInterval { get }
+    var shiftRestartHours: TimeInterval { get }
+    var breakHours: TimeInterval { get }
+}
+
+public struct ShiftRuleInSeconds: EZShiftRule {
     
     public let days: TimeInterval = 8 * hInSec * 24
     public let inspectionDays: TimeInterval = 8 * hInSec * 24

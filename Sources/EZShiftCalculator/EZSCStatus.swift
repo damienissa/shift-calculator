@@ -1,5 +1,5 @@
 //
-//  Status.swift
+//  EZSCStatus.swift
 //  Calculator
 //
 //  Created by Dima Virych on 30.09.2020.
@@ -7,7 +7,7 @@
 
 import Foundation
 
-public enum StatusType: Int, Codable {
+public enum EZSCStatusType: Int, Codable {
     
     case on
     case driving
@@ -15,10 +15,10 @@ public enum StatusType: Int, Codable {
     case off
 }
 
-public struct Status: Decodable {
+public struct EZSCStatus: Decodable {
     
-    public let startDate: Date
-    public var type: StatusType
+    public var startDate: Date
+    public var type: EZSCStatusType
     public var endDate: Date?
     public var restart: TimeInterval = 0
     
@@ -26,7 +26,7 @@ public struct Status: Decodable {
         endDate == nil ? 0 : endDate!.timeIntervalSince1970 - startDate.timeIntervalSince1970
     }
     
-    public init(type: StatusType, startDate: Date) {
+    public init(type: EZSCStatusType, startDate: Date) {
         self.type = type
         self.startDate = startDate
     }
@@ -35,7 +35,7 @@ public struct Status: Decodable {
         endDate = date
     }
     
-    public mutating func setType(_ type: StatusType) {
+    public mutating func setType(_ type: EZSCStatusType) {
         self.type = type
     }
     
