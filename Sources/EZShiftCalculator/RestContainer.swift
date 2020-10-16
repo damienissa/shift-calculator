@@ -23,14 +23,14 @@ struct RestContainer {
   
     private let bigRest = 7 * 3600.0
     private var maxValue: TimeInterval
-    private var finished: (EZSCStatus?) -> Void
+    private var finished: ([EZSCStatus]) -> Void
     private var chain: [EZSCStatus] = []
     
     var value: TimeInterval {
         chain.map(\.statusLength).reduce(0, +)
     }
     
-    init(finished: @escaping (EZSCStatus?) -> Void, maxValue: TimeInterval) {
+    init(finished: @escaping ([EZSCStatus]) -> Void, maxValue: TimeInterval) {
         self.finished = finished
         self.maxValue = maxValue
     }
@@ -47,7 +47,7 @@ struct RestContainer {
         }
         
         if value >= maxValue {
-            finished(chain.last)
+            finished(chain)
             chain = []
         }
         

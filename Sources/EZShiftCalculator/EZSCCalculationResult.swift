@@ -20,6 +20,7 @@ public class EZSCCalculationResult {
     public var restartHoursCurrent: TimeInterval
     
     public var splitDate: Date?
+    public var splitDateEnd: Date?
     
     public var shiftCandidate: TimeInterval = 0
     public var shift: TimeInterval = 0 {

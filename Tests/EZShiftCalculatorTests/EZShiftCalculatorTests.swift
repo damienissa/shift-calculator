@@ -445,7 +445,7 @@ class CalculatorTests: XCTestCase {
     func test_11Violation() {
         
         let statuses = [
-            EZSCStatus(type: .off, startDate: .from(0)),
+            EZSCStatus(type: .off, startDate: .from(-34)),
             EZSCStatus(type: .on, startDate: .from(7)),
             EZSCStatus(type: .driving, startDate: .from(8)),
             EZSCStatus(type: .off, startDate: .from(13.5)),
@@ -460,10 +460,10 @@ class CalculatorTests: XCTestCase {
         let sut = makeSUT()
         
         let result = sut.calculate(statuses, on: .from(29), specials: [])
-        assert(result.drive, -5)
-        assert(result.shift, -5)
+        assert(result.drive, -8)
+        assert(result.shift, -8)
         assert(result.cycle, 56)
-        assert(result.cycleDays, 163)
+//        assert(result.cycleDays, 163)
     }
     
     func test_11Violation_() {
@@ -557,7 +557,6 @@ class CalculatorTests: XCTestCase {
         assert(result.shift, 2.5)
     }
 
-    
     func test_onMoreThan30() {
         
         let statuses = [
@@ -591,6 +590,7 @@ class CalculatorTests: XCTestCase {
     }
     
     func test_offMoreThan10() {
+        
         let statuses = [
             EZSCStatus(type: .driving, startDate: .from(0)),
             EZSCStatus(type: .off, startDate: .from(8)),
@@ -619,6 +619,7 @@ class CalculatorTests: XCTestCase {
     }
     
     func test_sbMoreThan10() {
+        
         let statuses = [
             EZSCStatus(type: .driving, startDate: .from(0)),
             EZSCStatus(type: .sb, startDate: .from(8)),
@@ -633,6 +634,7 @@ class CalculatorTests: XCTestCase {
     }
     
     func test_sbMoreThan10Viol() {
+        
         let statuses = [
             EZSCStatus(type: .driving, startDate: .from(0)),
             EZSCStatus(type: .sb, startDate: .from(8)),
@@ -647,6 +649,7 @@ class CalculatorTests: XCTestCase {
     }
     
     func test_2to8() {
+        
         let statuses = [
             EZSCStatus(type: .driving, startDate: .from(0)),
             EZSCStatus(type: .off, startDate: .from(2)),
@@ -870,7 +873,6 @@ class CalculatorTests: XCTestCase {
             EZSCStatus(type: .off, startDate: .from(7)),
             EZSCStatus(type: .on, startDate: .from(10)),
             EZSCStatus(type: .driving, startDate: .from(12)),
-            EZSCStatus(type: .off, startDate: .from(16)),
             EZSCStatus(type: .sb, startDate: .from(17)),
             EZSCStatus(type: .off, startDate: .from(20)),
             EZSCStatus(type: .sb, startDate: .from(21)),
@@ -887,6 +889,144 @@ class CalculatorTests: XCTestCase {
         assert(result2.shift, 0)
     }
     
+    func test_two_sb_issue() {
+        
+        let statuses = [
+            EZSCStatus(type: .on, startDate: .from(0)),
+            EZSCStatus(type: .driving, startDate: .from(1)),
+            EZSCStatus(type: .off, startDate: .from(7)),
+            EZSCStatus(type: .on, startDate: .from(10)),
+            EZSCStatus(type: .driving, startDate: .from(12)),
+            EZSCStatus(type: .sb, startDate: .from(17)),
+            EZSCStatus(type: .sb, startDate: .from(20)),
+        ]
+        
+        let sut = makeSUT()
+        
+        let result2 = sut.calculate(statuses, on: .from(24), specials: [])
+        assert(result2.drive, 6)
+        assert(result2.shift, 7)
+    }
+    
+    func test_den_case() {
+        
+        let statuses = [
+            EZSCStatus(type: .off, startDate: .from(0)),
+            EZSCStatus(type: .sb, startDate: .from(7)),
+            EZSCStatus(type: .on, startDate: .from(10)),
+            EZSCStatus(type: .sb, startDate: .from(11)),
+            EZSCStatus(type: .driving, startDate: .from(18)),
+            EZSCStatus(type: .off, startDate: .from(20)),
+        ]
+        
+        let sut = makeSUT()
+        
+        let result2 = sut.calculate(statuses, on: .from(18), specials: [])
+        assert(result2.drive, 6)
+        assert(result2.shift, 6)
+        
+        let result3 = sut.calculate(statuses, on: .from(24), specials: [])
+        assert(result3.drive, 9)
+        assert(result3.shift, 12)
+    }
+    
+    func test_den_case_mirror() {
+        
+        let statuses = [
+            EZSCStatus(type: .sb, startDate: .from(0)),
+            EZSCStatus(type: .off, startDate: .from(7)),
+            EZSCStatus(type: .on, startDate: .from(10)),
+            EZSCStatus(type: .sb, startDate: .from(11)),
+            EZSCStatus(type: .driving, startDate: .from(18)),
+            EZSCStatus(type: .off, startDate: .from(20)),
+        ]
+        
+        let sut = makeSUT()
+        
+        let result2 = sut.calculate(statuses, on: .from(18), specials: [])
+        assert(result2.drive, 6)
+        assert(result2.shift, 6)
+        
+        let result3 = sut.calculate(statuses, on: .from(24), specials: [])
+        assert(result3.drive, 9)
+        assert(result3.shift, 12)
+    }
+    
+    func test_realDriver_case() {
+        
+        let statuses = [
+            EZSCStatus(type: .off, startDate: .from(0)),
+            EZSCStatus(type: .on, startDate: .from(0.25)),
+            EZSCStatus(type: .driving, startDate: .from(0.75)),
+            EZSCStatus(type: .sb, startDate: .from(2)),
+            EZSCStatus(type: .on, startDate: .from(4.25)),
+            EZSCStatus(type: .sb, startDate: .from(4.75)),
+            EZSCStatus(type: .on, startDate: .from(9)),
+            EZSCStatus(type: .driving, startDate: .from(10)),
+            EZSCStatus(type: .off, startDate: .from(12.5)),
+            EZSCStatus(type: .off, startDate: .from(12.75)),
+            EZSCStatus(type: .driving, startDate: .from(13)),
+            EZSCStatus(type: .off, startDate: .from(16.5)),
+            EZSCStatus(type: .driving, startDate: .from(17)),
+            EZSCStatus(type: .on, startDate: .from(19.5)),
+            EZSCStatus(type: .driving, startDate: .from(20)),
+            EZSCStatus(type: .sb, startDate: .from(21)),
+            EZSCStatus(type: .driving, startDate: .from(21.25)),
+            EZSCStatus(type: .sb, startDate: .from(22.75)),
+        ]
+        
+        let sut = makeSUT()
+        
+        let result = sut.calculate(statuses, on: .from(14), specials: [])
+        assert(result.drive, 0)
+        assert(result.shift, 0)
+        
+        let result2 = sut.calculate(statuses, on: .from(24), specials: [])
+        assert(result2.drive, -10)
+        assert(result2.shift, -10)
+    }
+    
+    func test_realDriver2_case() {
+        
+        let statuses = [
+            EZSCStatus(type: .off, startDate: .from(0)),
+            EZSCStatus(type: .driving, startDate: .from(16)),
+            EZSCStatus(type: .off, startDate: .from(20)),
+            EZSCStatus(type: .driving, startDate: .from(21)),
+            EZSCStatus(type: .sb, startDate: .from(23)),
+            EZSCStatus(type: .on, startDate: .from(24 + 8)),
+            EZSCStatus(type: .driving, startDate: .from(24 + 9)),
+            EZSCStatus(type: .off, startDate: .from(24 + 11)),
+            EZSCStatus(type: .off, startDate: .from(24 + 13)),
+        ]
+        
+        let sut = makeSUT()
+        
+        let result = sut.calculate(statuses, on: .from(24 + 21), specials: [])
+        assert(result.drive, 11)
+        assert(result.shift, 14)
+    }
+    
+    /*
+     val calculator = ShiftCalculator()
+            val statuses = arrayListOf(
+                    ShiftStatus(EShiftStatusType.OFF, createDate(0)),
+                    ShiftStatus(EShiftStatusType.DR, createDate(16)),
+                    ShiftStatus(EShiftStatusType.OFF, createDate(20)),
+                    ShiftStatus(EShiftStatusType.DR, createDate(21)),
+                    ShiftStatus(EShiftStatusType.SB, createDate(23)),
+                    ShiftStatus(EShiftStatusType.ON, createDate(24 + 8)),
+                    ShiftStatus(EShiftStatusType.DR, createDate(24 + 9)),
+                    ShiftStatus(EShiftStatusType.OFF, createDate(24 + 11)),
+                    ShiftStatus(EShiftStatusType.OFF, createDate(24 + 13))
+            )
+
+            val result = calculator.calculate(statuses, createDate(24 + 18))
+            Assert.assertEquals(result.drive.toHours(), -12f)
+            Assert.assertEquals(result.shift.toHours(), -12f)
+
+     */
+    
     func makeSUT() -> EZShiftCalculator {
         EZShiftCalculator(SPY())
     }
@@ -896,7 +1036,21 @@ class CalculatorTests: XCTestCase {
             ShiftRuleInSeconds()
         }
     }
+    
+    struct Other: EZShiftRule {
+        
+        var days: TimeInterval = 9999999999
+        var inspectionDays: TimeInterval = 9999999999
+        var cycleHours: TimeInterval = 9999999999
+        var shiftHours: TimeInterval = 9999999999
+        var driveHours: TimeInterval = 9999999999
+        var restartHours: TimeInterval = 9999999999
+        var shiftRestartHours: TimeInterval = 9999999999
+        var breakHours: TimeInterval = 9999999999
+    }
 }
+
+
 
 func assert(_ result: TimeInterval, _ expected: TimeInterval, file: StaticString = #file, line: UInt = #line) {
     

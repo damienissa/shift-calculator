@@ -22,22 +22,22 @@ extension Array where Element == EZSCStatus {
     public func joinedSame(with type: EZSCStatusType) -> Self {
         
         var new: Self = []
-        var previous: EZSCStatus?
-        
+        var sub: Self = []
+
         for element in self {
             if element.type == type {
-                if previous == nil {
-                    previous = element
-                    previous?.setType(type)
-                    new.append(element)
-                }
+                sub.append(element)
+                var st = EZSCStatus(type: type, startDate: sub.first!.startDate)
+                st.setEndDate(element.endDate!)
+                sub = [st]
             } else {
-                previous = nil
+                new.append(contentsOf: sub)
+                sub = []
                 new.append(element)
             }
         }
         
-        new.setEndDate(new.last?.endDate ?? Date())
+        new.append(contentsOf: sub)
         
         return new
     }
@@ -51,7 +51,7 @@ extension Array where Element == EZSCStatus {
             if element.isRest() {
                 sub.append(element)
                 if sub.map(\.statusLength).reduce(0, +) >= minRestValue {
-                    var st = EZSCStatus(type: .sb, startDate: sub.first!.startDate)
+                    var st = EZSCStatus(type: .off, startDate: sub.first!.startDate)
                     st.setEndDate(element.endDate!)
                     sub = [st]
                 }
@@ -75,10 +75,11 @@ extension Array where Element == EZSCStatus {
         let maxRestValue = 7 * 3600.0
 
         for element in self {
+            
             if element.isRest() {
                 sub.append(element)
-                if sub.map(\.statusLength).reduce(0, +) <= maxRestValue {
-                    var st = EZSCStatus(type: .sb, startDate: sub.first!.startDate)
+                if (sub.map(\.statusLength).reduce(0, +) + element.statusLength) <= maxRestValue {
+                    var st = EZSCStatus(type: .off, startDate: sub.first!.startDate)
                     st.setEndDate(element.endDate!)
                     sub = [st]
                 }

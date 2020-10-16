@@ -37,9 +37,10 @@ public class EZShiftCalculator {
         
         self.provider = provider
         result = EZSCCalculationResult.init(rule: rule, date: Date())
-        restChain = RestContainer(finished: { status in
+        restChain = RestContainer(finished: { statuses in
             self.reseted = true
-            self.result.splitDate = status?.endDate
+            self.result.splitDate = statuses.last?.endDate
+            self.result.splitDateEnd = statuses.first?.startDate
         }, maxValue: rule.shiftRestartHours)
     }
     
@@ -117,7 +118,7 @@ public class EZShiftCalculator {
         
         if status.statusLength >= longRestTime && status.type == .sb {
             result.shift -= restChain.insert(status)?.statusLength ?? 0
-        } else if status.statusLength >= shortRestTime {
+        } else if status.statusLength >= shortRestTime && status.statusLength < longRestTime  {
             result.shift -= restChain.insert(status)?.statusLength ?? 0
         } else {
             result.shift -= status.statusLength
